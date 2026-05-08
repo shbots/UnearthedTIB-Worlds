@@ -1,0 +1,5 @@
+def jaydengyroturn(degres):
+    while motion_sensor.tilt_angles()[0] < degres: #the yaw in the robot in off by 8 degrees if you want to turn 90 make it 820 and 180 make it 1720 if it doesnt work well try changing the values
+        motor.run_for_degrees(port.A, 10000, 500)
+    motor_pair.stop(motor_pair.PAIR_1)
+    motion_sensor.reset_yaw(0)
