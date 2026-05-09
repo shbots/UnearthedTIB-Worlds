@@ -1,0 +1,101 @@
+ import motor,motor_pair,runloop
+import time
+from hub import port,motion_sensor
+
+
+# set up stuff
+motor_pair.pair(motor_pair.PAIR_1,port.A,port.B)
+motion_sensor.reset_yaw(0)
+motor.reset_relative_position(port.B,0) # this is a new line that I have added that can track how far a robot wheel has turned :)
+
+def gyro_straight(degress_foward,vel): # jus defines a function
+    motion_sensor.reset_yaw(0)
+    motor.reset_relative_position(port.B,0)
+    while motor.relative_position(port.B) < degress_foward: # while we have not moved foward??
+        vel = vel
+        error = motion_sensor.tilt_angles()[0] # define tilt
+        correction = error * -2 # this is the correction
+        left = vel -correction # left wheel correction
+
+        right = vel + correction # right wheel correction
+        motor_pair.move_tank(motor_pair.PAIR_1,left,right)# moves each wheel SEPRETELY so we can make better adjustments
+        print(motor.relative_position(port.B))
+    motor_pair.stop(motor_pair.PAIR_1,stop=motor.COAST) # stops the motor after the while loop has been finished
+    motor.reset_relative_position(port.B,0)
+    motion_sensor.reset_yaw(0)
+
+async def jaydengyrostraight(distance_deg, vel, target_angle, kp):
+    #distance_deg is the distance you are moving forward in degrees, velocity is the speed at which you are moving forward, target_angle is the real world angle you are moving forward at (to the right = 90, directly forward = 0, directly backward = 180 and kp is the correction value (0.01 works best))
+    motor.reset_relative_position(port.A, 0) #resets the relative position to track travel distance
+
+        # 1. Flip velocity if distance is negative
+    if distance_deg < 0:
+        vel = -abs(vel)
+        direction = -1
+    else:
+        vel = abs(vel)
+        direction = 1
+
+    while abs(motor.relative_position(port.A)) < abs(distance_deg):
+        # Error = Target angle - current angle
+        current_yaw = motion_sensor.tilt_angles()[0] * 0.1 #converting the decidegrees into normal full degrees in the yaw
+        error = current_yaw - target_angle #gets the error in the straight
+
+        correction = int(error * kp * direction) #calculates the correction by multiplying the error and the kp value
+        motor_pair.move(motor_pair.PAIR_1, correction, velocity = vel) #the action of actually correcting it
+        await runloop.sleep_ms(10)
+
+    motor_pair.stop(motor_pair.PAIR_1)
+
+
+def main():
+    gyro_straight(580,800)
+    time.sleep(.5)
+    motor.run_for_degrees(port.D, 450, 1200, acceleration=10000)
+    time.sleep(0.7)
+    motor.run_for_degrees(port.D, -350, 1200)
+    time.sleep(0.7)
+    motor.run_for_degrees(port.D, 450, 1200, acceleration=10000)
+    time.sleep(0.7)
+    motor.run_for_degrees(port.D, -350, 1200)
+    time.sleep(0.7)
+    motor.run_for_degrees(port.D, 450, 1200, acceleration=10000)
+    time.sleep(0.7)
+    motor.run_for_degrees(port.D, -590, 500, acceleration=1000)
+    time.sleep(1)
+    gyro_straight(410,800)
+    time.sleep(1)
+    motor.run_for_degrees(port.A, -115, 200)
+    time.sleep(1)
+    gyro_straight(10,800)
+    time.sleep(1)
+    motor.run_for_degrees(port.C, -500, 200)
+    time.sleep(2)
+    motor_pair.move_tank_for_degrees(motor_pair.PAIR_1,-200,1000,1000)
+    time.sleep(1)
+    motor.run_for_degrees(port.A, -150, 400)
+    time.sleep(1)
+    motor.run_for_degrees(port.C, 300, 300)
+    time.sleep(2)
+    motor.run_for_degrees(port.A, 150, 200)
+    time.sleep(1)
+    motor_pair.move_tank_for_degrees(motor_pair.PAIR_1,-80,1000,1000)
+    time.sleep(1)
+    motor.run_for_degrees(port.D, 520, 200)
+    time.sleep(2)
+    motor.run_for_degrees(port.A, 500, 300)
+    '''
+    time.sleep(1)
+    motor.run_for_degrees(port.A, -500, 400)
+    time.sleep(1)
+    motor_pair.move_tank_for_degrees(motor_pair.PAIR_1,-300,1000,1000)
+    '''
+main()
+# bathanael goshua
+# bathanael goshua
+# bathanael goshua
+# bathanael goshua
+# bathanael goshua
+
+
+#allignment is 5 and 3/4 blocks to the left of the right hand side
