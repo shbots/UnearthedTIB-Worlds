@@ -1,0 +1,22 @@
+async def jaydengyrostraight(distance_deg, vel, target_angle, kp):
+    #distance_deg is the distance you are moving forward in degrees, velocity is the speed at which you are moving forward, target_angle is the real world angle you are moving forward at (to the right = 90, directly forward = 0, directly backward = 180 and kp is the correction value (0.01 works best))
+    motor.reset_relative_position(port.A, 0) #resets the relative position to track travel distance
+
+        # 1. Flip velocity if distance is negative
+    if distance_deg < 0:
+        vel = -abs(vel)
+        direction = -1
+    else:
+        vel = abs(vel)
+        direction = 1
+
+    while abs(motor.relative_position(port.A)) < abs(distance_deg):
+        # Error = Target angle - current angle
+        current_yaw = motion_sensor.tilt_angles()[0] * 0.1 #converting the decidegrees into normal full degrees in the yaw
+        error = current_yaw - target_angle #gets the error in the straight
+        
+        correction = int(error * kp * direction) #calculates the correction by multiplying the error and the kp value
+        motor_pair.move(motor_pair.PAIR_1, correction, velocity = vel) #the action of actually correcting it
+        await runloop.sleep_ms(10)
+
+    motor_pair.stop(motor_pair.PAIR_1)
