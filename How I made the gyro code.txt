@@ -1,0 +1,7 @@
+﻿Hey, Jayden here. This is my story. Of how. I made. The gyro code in python in spike prime. So it all started when aakash had his garbage gyro code which was realy bad inconsistent and it disrupted the way we did things cause before he made his gyro we could use await but ever since he made his code we had to change it to time sleep which wasted a ton of time and was really inefficient and bad. So basically I saw this and thought it was complete and utter madness and decided that this had to change. So I sat down and started coding a new gyro code, a gyro code that was not flawed, a gyro code that was PERFECT. After around 30 minutes I finished this gyro code and was ready to start testing it. Compared to the other functions we had it was enormous, it had four different arguments and I had to heavily comment it for others to even understand it. But despite these complications, the code worked and ran. Now we don’t have to use time.sleep or any other things. Hooray! This is such great news!
+
+
+The first argument is distance_deg which is simply the degres forward that it moves
+Vel is the velocity which is essentially the directional speed it moves at
+Target_angle is essentially the angle it moves straight at RELATIVE TO THE STARTING POSITION. For example if your moving straight directly to the right of where you started this value would be ninety.
+Kp is essentially the correction value, the higher it is, the more aggressively the robot corrects itself to stay on course
