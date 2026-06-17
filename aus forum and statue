@@ -1,0 +1,65 @@
+import motor,motor_pair,runloop
+import time
+from hub import port,motion_sensor
+
+
+# set up stuff
+motor_pair.pair(motor_pair.PAIR_1,port.A,port.B)
+motion_sensor.reset_yaw(0)
+motor.reset_relative_position(port.B,0) # this is a new line that I have added that can track how far a robot wheel has turned 
+
+async def jaydengyrostraight(distance_deg, vel, target_angle, kp):
+    #distance_deg is the distance you are moving forward in degrees, velocity is the speed at which you are moving forward, target_angle is the real world angle you are moving forward at (to the right = 90, directly forward = 0, directly backward = 180 and kp is the correction value (0.01 works best))
+    motor.reset_relative_position(port.A, 0) #resets the relative position to track travel distance
+
+        # 1. Flip velocity if distance is negative
+    if distance_deg < 0:
+        vel = -abs(vel)
+        direction = -1
+    else:
+        vel = abs(vel)
+        direction = 1
+
+    while abs(motor.relative_position(port.A)) < abs(distance_deg):
+        # Error = Target angle - current angle
+        current_yaw = motion_sensor.tilt_angles()[0] * 0.1 #converting the decidegrees into normal full degrees in the yaw
+        error = current_yaw - target_angle #gets the error in the straight
+
+        correction = int(error * kp * direction) #calculates the correction by multiplying the error and the kp value
+        motor_pair.move(motor_pair.PAIR_1, correction, velocity = vel) #the action of actually correcting it
+        await runloop.sleep_ms(10)
+
+    motor_pair.stop(motor_pair.PAIR_1)
+
+async def jaydengyroturn(degres, k, vel): #k determines the turning way
+    if k == True:
+        while motion_sensor.tilt_angles()[0] < degres: #the yaw in the robot in off by 8 degrees if you want to turn 90 make it 820 and 180 make it 1720 if it doesnt work well try changing the values
+            motor.run_for_degrees(port.A, 10000, vel)
+        motor_pair.stop(motor_pair.PAIR_1)
+        motion_sensor.reset_yaw(0)
+    elif k == False:
+        while motion_sensor.tilt_angles()[0] > degres: #the yaw in the robot in off by 8 degrees if you want to turn 90 make it 820 and 180 make it 1720 if it doesnt work well try changing the values
+            motor.run_for_degrees(port.A, -10000, vel)
+        motor_pair.stop(motor_pair.PAIR_1)
+        motion_sensor.reset_yaw(0)
+    else:
+        motor_pair.stop
+async def main():
+    await jaydengyroturn(0,True,500) #how much you want to turn, which direction, velocity
+    
+    await jaydengyrostraight(300,800, 0, 0.4)
+    await jaydengyroturn(-420,False,300)
+    await jaydengyrostraight(280,800,0,0.4)
+    await motor_pair.move_tank_for_degrees(motor_pair.PAIR_1,-280,1000,1000)
+    await jaydengyroturn(-380,False,300)
+    await jaydengyrostraight(1300,900,0,0.4)
+    await jaydengyroturn(1205,True,300)
+    await motor_pair.move_tank_for_degrees(motor_pair.PAIR_1,-30,1000,1000)
+    await motor.run_for_degrees(port.D,350, 1200, acceleration=500)
+    await jaydengyrostraight(210,600,0,0.4)
+    
+    await motor.run_for_degrees(port.D,-200, 300, acceleration=300)
+    
+    await jaydengyroturn(-100,False,300)
+    await motor_pair.move_tank_for_degrees(motor_pair.PAIR_1,-300,1000,1000)
+runloop.run(main())
